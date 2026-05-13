@@ -1,0 +1,5 @@
+---
+# defaults file for lighthouse-role
+lighthouse_install_dir: "/var/www/lighthouse"
+nginx_listen_port: 80
+nginx_server_name: "_"

@@ -1,0 +1,51 @@
+---
+# tasks file for lighthouse-role
+- name: Install nginx (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: nginx
+    update_cache: true
+    state: present
+  when: ansible_facts.os_family == "Debian"
+
+- name: Install git (Debian/Ubuntu)
+  ansible.builtin.apt:
+    name: git
+    state: present
+    update_cache: true
+  when: ansible_facts.os_family == "Debian"
+
+- name: Create lighthouse directory
+  ansible.builtin.file:
+    path: "{{ lighthouse_install_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Checkout Lighthouse repo
+  ansible.builtin.git:
+    repo: "https://github.com/VKCOM/lighthouse.git"
+    dest: "{{ lighthouse_install_dir }}"
+    version: "master"
+    force: true
+  when: not ansible_check_mode
+
+- name: Deploy nginx config for lighthouse
+  ansible.builtin.template:
+    src: "templates/nginx/lighthouse.conf.j2"
+    dest: "/etc/nginx/sites-available/lighthouse.conf"
+    mode: "0644"
+  notify: Reload nginx
+
+- name: Enable lighthouse site
+  ansible.builtin.file:
+    src: "/etc/nginx/sites-available/lighthouse.conf"
+    dest: "/etc/nginx/sites-enabled/lighthouse.conf"
+    state: link
+  notify: Reload nginx
+  when: not ansible_check_mode
+
+- name: Enable and start nginx
+  ansible.builtin.systemd:
+    name: nginx
+    enabled: true
+    state: started
+  when: not ansible_check_mode
