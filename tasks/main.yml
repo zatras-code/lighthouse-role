@@ -30,7 +30,7 @@
 
 - name: Deploy nginx config for lighthouse
   ansible.builtin.template:
-    src: "templates/nginx/lighthouse.conf.j2"
+    src: "lighthouse.conf.j2"
     dest: "/etc/nginx/sites-available/lighthouse.conf"
     mode: "0644"
   notify: Reload nginx
