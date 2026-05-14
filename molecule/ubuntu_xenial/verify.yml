@@ -1,0 +1,17 @@
+---
+- name: Verify
+  hosts: all
+  become: false
+
+  tasks:
+    - name: Check nginx installed
+      command: nginx -v
+      changed_when: false
+
+    - name: Check nginx service
+      service_facts:
+
+    - name: Assert nginx running
+      assert:
+        that:
+          - services['nginx.service'].state == 'running'

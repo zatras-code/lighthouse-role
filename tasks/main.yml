@@ -1,5 +1,6 @@
 ---
 # tasks file for lighthouse-role
+
 - name: Install nginx (Debian/Ubuntu)
   ansible.builtin.apt:
     name: nginx
@@ -28,24 +29,44 @@
     force: true
   when: not ansible_check_mode
 
-- name: Deploy nginx config for lighthouse
+- name: Deploy nginx config for Debian
   ansible.builtin.template:
     src: "lighthouse.conf.j2"
     dest: "/etc/nginx/sites-available/lighthouse.conf"
     mode: "0644"
+  when: ansible_facts.os_family == "Debian"
   notify: Reload nginx
 
-- name: Enable lighthouse site
+- name: Enable lighthouse site on Debian
   ansible.builtin.file:
     src: "/etc/nginx/sites-available/lighthouse.conf"
     dest: "/etc/nginx/sites-enabled/lighthouse.conf"
     state: link
+  when:
+    - ansible_facts.os_family == "Debian"
+    - not ansible_check_mode
   notify: Reload nginx
-  when: not ansible_check_mode
 
-- name: Enable and start nginx
+- name: Deploy nginx config for RedHat
+  ansible.builtin.template:
+    src: "lighthouse.conf.j2"
+    dest: "/etc/nginx/conf.d/lighthouse.conf"
+    mode: "0644"
+  when: ansible_facts.os_family == "RedHat"
+  notify: Reload nginx
+
+- name: Enable and start nginx on Debian
+
   ansible.builtin.systemd:
+
     name: nginx
+
     enabled: true
+
     state: started
-  when: not ansible_check_mode
+
+  when:
+
+    - not ansible_check_mode
+
+    - ansible_facts.os_family == "Debian"
